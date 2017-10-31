@@ -6,10 +6,10 @@
         <title>Wikimedia - Pages Created and Edited Tool</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-  		<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
         <link rel="stylesheet" href="https://tools-static.wmflabs.org/cdnjs/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
         <link rel="stylesheet" href="https://tools-static.wmflabs.org/cdnjs/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
+        <script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/jquery/3.2.1/jquery.js"></script>
+        <script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/popper.js/1.9.9/umd/popper.min.js"></script>
         <script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/twitter-bootstrap/4.0.0-beta/js/bootstrap.min.js"></script>
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
         <link rel="stylesheet" type="text/css" href={% static "css/main.css" %}>
@@ -39,11 +39,14 @@
                         </div>
                 </div>
 
-                <div class="row">
+                <div class="row status">
                         <div class="slide-container" id="message">
+                            <noscript>
+                                <div class='panel panel-default message'><div class='panel-body'>We can not create graphs for you since javascript is disabled in your browser!</div></div>
+                            </noscript>
                         </div>
                 </div>
-                
+
                 <div class="row graphs">
                     <div id="articles-edited"></div>
                 	<div id="articles-created"></div>

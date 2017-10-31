@@ -30,12 +30,27 @@ $(document).ready(function() {
  */
 function drawCharts(data) {
   //Draw chart for articles created by a user
-  drawContributionTimelineChart(data.articlesCreatedDates, 'Articles Created',
-    'articles-created');
+  if (data.articlesCreated.result == true) {
+  drawContributionTimelineChart(data.articlesCreated.dates, 'Articles Created',
+    'articles-created');    
+  }
+  else{
+    $("#message").html(
+          "<div class='panel panel-default message'><div class='panel-body'>" + data.articlesCreated.message + "</div></div>"
+        );
+  }
+
 
   //Draw chart for articles edited by a user
-  drawContributionTimelineChart(data.articlesEditedDates, 'Articles Edited',
-    'articles-edited');
+  if (data.articlesEdited.result == true) {
+  drawContributionTimelineChart(data.articlesEdited.dates, 'Articles Edited',
+    'articles-edited');   
+  }
+  else{
+    $("#message").html(
+          "<div class='panel panel-default message'><div class='panel-body'>" + data.articlesEdited.message + "</div></div>"
+        );
+  }
 }
 /**
  * Function to draw charts showing the timeline of contributions of a user

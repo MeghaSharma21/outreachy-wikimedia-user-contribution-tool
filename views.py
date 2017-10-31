@@ -13,7 +13,7 @@ import json
 def home(request):
 	if request.method == 'POST' and request.is_ajax():
 		username = request.POST['username']
-		year = 2016 #datetime.datetime.now().year
+		year = datetime.datetime.now().year
 		# Starting date of the year
 		start_date = datetime.datetime(year, 1, 1, 00, 00, 00)
 		# Ending date of the year
@@ -34,46 +34,43 @@ def home(request):
 		articlesCreatedParameters['ucshow'] = "new"
 		articlesEditedParameters['ucshow'] = "!new"
 		# For articles created
-		articlesCreatedDates = getContributionTimelineData(articlesCreatedParameters)
+		articlesCreatedResult, articlesCreatedMessage, articlesCreatedDates = getContributionTimelineData(articlesCreatedParameters)
+		articlesCreated = {'result':articlesCreatedResult, 'message':articlesCreatedMessage, 'dates':articlesCreatedDates}
 		# For articles edited
-		articlesEditedDates = getContributionTimelineData(articlesEditedParameters)
-		return HttpResponse(json.dumps({'articlesCreatedDates':articlesCreatedDates, 'articlesEditedDates':articlesEditedDates}), content_type="application/json")
+		articlesEditedResult, articlesEditedMessage, articlesEditedDates = getContributionTimelineData(articlesEditedParameters)
+		articlesEdited = {'result':articlesEditedResult, 'message':articlesEditedMessage, 'dates':articlesEditedDates}
+		return HttpResponse(json.dumps({'articlesCreated':articlesCreated, 'articlesEdited':articlesEdited}), content_type="application/json")
 	return render(request, 'home.html', {})
 
 
 def getContributionTimelineData(parameters):
 	contributionDatesDict = defaultdict(int) # default value of int is 0
+	message = ""
+	result = True	# whenever result will be false, message will be shown to the user, telling what went wrong, instead of the graphs
 	url='https://en.wikipedia.org/w/api.php'
 	while True:
-		url_parameters = urllib.parse.urlencode(parameters)
-		formatted_url =  (url + '?{}').format(url_parameters)
-		response_object = requests.get(formatted_url)
+		response_object = requests.get(url, params=parameters)
 		if response_object.status_code == 200:
 				# Loading the response data into a dict variable
 				# json.loads takes in only binary or string variables so using text to fetch binary content
 				# Loads (Load String) takes a Json file and converts into python data structure (dict or list, depending on JSON)
 				json_data = json.loads(response_object.text)
-				try:
-					 # if username is not valid
-					if json_data['error']:
-						print("Error", json_data['error']['info'])
-				except:
+				if 'error' in json_data:
+					result = False
+					message = "Phew! Faced this error while creating graphs.\n Error: " + str(json_data['error']['info']) 
+				else:
 					contribution_data = [i for i in json_data['query']['usercontribs']]
-					 # if user has no edits
-					if len(contribution_data) == 0:
-						print("0 edits found")
-					else:
-						for contribution_details in contribution_data:
-							timestamp = dateutil.parser.parse(contribution_details['timestamp'])
-							contributionDatesDict[str(timestamp.date())] += 1
-						print(len(contribution_data))
+					for contribution_details in contribution_data:
+						timestamp = dateutil.parser.parse(contribution_details['timestamp'])
+						contributionDatesDict[str(timestamp.date())] += 1
+					print(len(contribution_data))
 				if 'continue' in json_data:
 					parameters['uccontinue'] = json_data['continue']['uccontinue']
 					parameters['continue'] = json_data['continue']['continue']
 				else:
-					return contributionDatesDict
 					break
-
 		else:
-				# If response code is not ok (200), print the resulting http error code with description
-				response_object.raise_for_status()
+				# If response code is not ok (200)
+				result = False
+				message = "Could not create graph. HTTP Status Code: " + str(response_object.status_code)
+	return (result, message, contributionDatesDict)
